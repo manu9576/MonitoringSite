@@ -21,25 +21,43 @@ namespace WpfMonitoring
     /// </summary>
     public partial class MainWindow : Window
     {
-        private MainView m_view = null;
+
+        private MainView m_View = null;
         private Worker m_Worker = null;
 
         public MainWindow()
         {
             InitializeComponent();
-            m_view = new MainView();
-            this.DataContext = m_view;
-            m_Worker = new Worker(m_view.Sites);
+
+            m_Worker = new Worker();
+            m_View = new MainView(m_Worker.Parameter.SitesList,m_Worker.Parameter.ConnectionTest);
+
+            DataContext = m_View;
+
+
+        }
+
+        ~MainWindow()
+        {
+            if (m_Worker != null)
+            {
+                m_Worker.Stop();
+            }
         }
 
         private void Bt_action_Click(object sender, RoutedEventArgs e)
         {
-            m_view.AddSite(tb_NomSite.Text);
+            m_Worker.AddSite(tb_NomSite.Text);
         }
 
-        private void MainWindows_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        private void Bt_delete_Click(object sender, RoutedEventArgs e)
         {
-            m_Worker.Stop();
+            object item = dg_Sites.SelectedItem;
+
+            if (item != null && item is SiteParameters)
+            {
+                m_Worker.RemoveSite((item as SiteParameters).SiteName);
+            }
         }
     }
 }

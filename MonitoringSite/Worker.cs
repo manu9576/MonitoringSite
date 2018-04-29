@@ -1,30 +1,35 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
+using System.Xml.Serialization;
+using Logger;
 
 namespace MonitoringSite
 {
-    public class Worker : IDisposable
+    public class Worker
     {
-        private const int TIME_TEST_SEC = 1;
+        
+        public int TimeIntervalSec { get; set; }
 
-        private ObservableCollection<SiteParameters> m_Sites = null;
+
+        public GlobalParameters Parameter { get; set; }
+        
         private Thread m_Pinging = null;
         private bool m_running = false;
-        static Ping m_pinger = new Ping();
 
-        static Worker()
+
+        public Worker()
         {
-            m_pinger = new Ping();
+            Parameter = GlobalParameters.Load();
 
-        }
-
-        public Worker(ObservableCollection<SiteParameters> Sites)
-        {
-            m_Sites = Sites;
+            TimeIntervalSec = 2;
 
             m_Pinging = new Thread(Th_ping)
             {
@@ -32,85 +37,127 @@ namespace MonitoringSite
             };
 
             m_Pinging.Start();
+        }
 
+        public bool AddSite(string name)
+        {
+            bool response = false;
+
+            if (!Parameter.SitesList.Select(s => s.SiteName).Contains(name))
+            {
+                lock (Parameter)
+                {
+                    Parameter.SitesList.Add(new SiteParameters(name));
+                    response = true;
+                }
+            }
+            return response;
+        }
+
+        public bool RemoveSite(string name)
+        {
+            bool response = false;
+
+            if (name != string.Empty)
+            {
+                SiteParameters site = Parameter.SitesList.Where(s => s.SiteName == name).FirstOrDefault();
+
+                if(Parameter.SitesList.Contains(site))
+                {
+                    lock(Parameter)
+                    {
+                        Parameter.SitesList.Remove(site);
+                        response = true;
+                    }
+                }
+            }
+
+            return response;
         }
 
         private void Th_ping()
         {
             m_running = true;
+            bool connectionTest = false;
+            Stopwatch timeElapsed = null;
 
             while (m_running)
             {
                 try
                 {
+                    timeElapsed = Stopwatch.StartNew();
+                    
+                    // Avoid that interval change during a loop
+                    int interval = TimeIntervalSec;
 
-                    foreach (SiteParameters site in m_Sites)
+                    connectionTest = PingSite(Parameter.ConnectionTest, interval);
+
+                    if (connectionTest)
                     {
-                        Console.WriteLine("Start ping for : " + site.SiteName);
-
-                        site.SurveyTime += TIME_TEST_SEC;
-
-                        if (!PingSite(site.SiteName))
+                        lock (Parameter)
                         {
-                            site.OffLineTime += TIME_TEST_SEC;
+                            Parallel.ForEach(Parameter.SitesList, site =>
+                            {
+                                PingSite(site, interval);
+                            });
                         }
-
-                        Console.WriteLine("End ping for : " + site.SiteName);
                     }
+
+                    timeElapsed.Stop();
+
+                    Thread.Sleep(TimeIntervalSec * 1000 - (int)timeElapsed.ElapsedMilliseconds);                     
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(ex);
-                }
-
-
-                // TODO change method to be sure off time elpased for each loop
-                Thread.Sleep(TIME_TEST_SEC * 1000);
+                    Log.WriteError(ex);
+                }   
             }
-
         }
 
-        public static bool PingSite(string webSite)
+        public static bool PingSite(SiteParameters webSite,int interval)
         {
 
             bool response = false;
 
             try
             {
-                if (webSite != string.Empty)
+                if (webSite != null)
                 {
-                    lock (m_pinger)
+                    Ping pinger = new Ping();
+                    
+                    PingReply reply = pinger.Send(webSite.SiteName, 500);
+
+                    Log.WriteInformation("Ping on site " + webSite.SiteName + " response : " + reply.Status);
+
+                    webSite.SurveyTime += TimeSpan.FromTicks(interval * 10000000);
+
+                    response = reply.Status == IPStatus.Success;
+
+                    if (!response)
                     {
-                        PingReply reply = m_pinger.Send(webSite, 500);
-
-                        if (reply.Status == IPStatus.Success)
-                        {
-                            response = true;
-                        }
-
+                        webSite.OffLineTime += TimeSpan.FromTicks(interval*10000000);
                     }
                 }
             }
-            catch (PingException ex)
+            catch (Exception ex)
             {
                 response = false;
-                Console.WriteLine(ex.Message);
-                // TODO log error message
+                Log.WriteError(ex);
             }
+
             return response;
 
         }
 
         public void Stop()
         {
-            m_running = false;
+            Parameter.SaveSites();
 
+            m_running = false;
+            
             m_Pinging.Join();
         }
 
-        public void Dispose()
-        {
-            Stop();
-        }
+
     }
 }

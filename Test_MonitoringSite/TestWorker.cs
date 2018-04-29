@@ -1,24 +1,25 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using MonitoringSite;
 using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Test_MonitoringSite
 {
-    class TestWorker
+    [TestClass]
+    public class TestWorker
     {
-        public object SuiviSite { get; private set; }
+        private SiteParameters googleDNS = new SiteParameters("8.8.8.8");
+        private SiteParameters googleDNS2 = new SiteParameters("8.8.4.4");
+        private SiteParameters noneExistingSite = new SiteParameters("255.255.255.25");
+        private SiteParameters falseIP = new SiteParameters("8..8");
 
         [TestMethod]
         public void PingSite_Ok()
         {
 
-            bool result = Worker.PingSite("8.8.8.8");
+            bool result = Worker.PingSite(googleDNS,1);
 
             Assert.IsTrue(result);
         }
@@ -27,7 +28,7 @@ namespace Test_MonitoringSite
         public void PingSite_FalseIP()
         {
 
-            bool result = Worker.PingSite("8..8");
+            bool result = Worker.PingSite(falseIP,1);
 
             Assert.IsTrue(!result);
         }
@@ -36,7 +37,7 @@ namespace Test_MonitoringSite
         public void PingSite_NoneExistingIP()
         {
 
-            bool result = Worker.PingSite("255.255.255.255");
+            bool result = Worker.PingSite(noneExistingSite, 1);
 
             Assert.IsTrue(!result);
         }
@@ -45,11 +46,11 @@ namespace Test_MonitoringSite
         public void PingSite_MultiThread()
         {
 
-            string[] ips = { "8.8.8.8", "255.255.255.255", "255.255.255.255", "0.0.0.1", string.Empty };
+            SiteParameters[] ips = { googleDNS, noneExistingSite, falseIP,googleDNS };
 
             Parallel.ForEach(ips, (ip) =>
             {
-                bool result = Worker.PingSite(ip);
+                bool result = Worker.PingSite(ip,1);
             });
 
         }
@@ -58,7 +59,7 @@ namespace Test_MonitoringSite
         public void PingSite_EmptyString()
         {
 
-            bool result = Worker.PingSite(string.Empty);
+            bool result = Worker.PingSite(new SiteParameters( string.Empty),1);
 
             Assert.IsTrue(!result);
         }
@@ -67,23 +68,25 @@ namespace Test_MonitoringSite
         public void Th_Ping_SitePing()
         {
 
-            ObservableCollection<SiteParameters> Sites = new ObservableCollection<SiteParameters>();
-
-            SiteParameters googleSite = new SiteParameters("8.8.8.8");
-            SiteParameters wrongSite = new SiteParameters("255.255.255.255");
-
-            Sites.Add(googleSite);
-            Sites.Add(wrongSite);
+            Worker wk = new Worker();
+            wk.AddSite(googleDNS.SiteName);
+            wk.AddSite(noneExistingSite.SiteName);
 
 
-            Worker wk = new Worker(Sites);
             Thread.Sleep(10000);
             wk.Stop();
 
-            Assert.AreEqual(googleSite.OffLineTime, 0, "Not offtime possible for 8.8.8.8");
-            Assert.AreEqual(wrongSite.OffLineTime, wrongSite.SurveyTime, "Offtime must be egal to Suvey time for none existing site");
+
+            wk.RemoveSite(googleDNS.SiteName);
+            wk.RemoveSite(noneExistingSite.SiteName);
+
+
+            Assert.AreEqual(googleDNS.OffLineTime, new TimeSpan(), "Not offtime possible for 8.8.8.8");
+            Assert.AreEqual(noneExistingSite.OffLineTime, noneExistingSite.SurveyTime, "Offtime must be egal to Suvey time for none existing site");
 
         }
+
+
 
     }
 }

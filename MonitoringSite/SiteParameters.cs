@@ -1,53 +1,92 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Text;
+using System.Xml.Serialization;
 
 namespace MonitoringSite
 {
     public class SiteParameters : INotifyPropertyChanged
     {
+
+       
+
+
+        public SiteParameters()
+        {
+            SiteName = string.Empty;
+            SurveyTime = new TimeSpan();
+            OffLineTime = new TimeSpan();
+        }
+
         public SiteParameters(string siteName)
         {
             SiteName = siteName;
-            SurveyTime = 0;
-            OffLineTime = 0;
+            SurveyTime = new TimeSpan();
+            OffLineTime = new TimeSpan();
         }
 
+        public string SiteName { get; set; }
 
-        public string SiteName { get; private set; }
-
-        public Int64 surveyTime;
-        public Int64 SurveyTime
+        public TimeSpan _surveyTime;
+        [XmlIgnore]
+        public TimeSpan SurveyTime
         {
             get
             {
-                return surveyTime;
+                return _surveyTime;
             }
             set
             {
-                if (value != surveyTime)
+                if (value != _surveyTime)
                 {
-                    surveyTime = value;
+                    _surveyTime = value;
                     RaisePropertyChanged("SurveyTime");
                 }
             }
         }
-
-        public Int64 offLineTime;
-        public Int64 OffLineTime
+        // For XML saving 
+        public long SurveyTimeTicks
         {
             get
             {
-                return offLineTime;
+                return SurveyTime.Ticks;
             }
             set
             {
-                if (value != offLineTime)
+                SurveyTime = new TimeSpan(value);
+            }
+        }
+
+
+        public TimeSpan _offLineTime;
+        [XmlIgnore]
+        public TimeSpan OffLineTime
+        {
+            get
+            {
+                return _offLineTime;
+            }
+            set
+            {
+                if (value != _offLineTime)
                 {
-                    offLineTime = value;
+                    _offLineTime = value;
                     RaisePropertyChanged("OffLineTime");
                 }
+            }
+        }
+        // For XML saving of OffLineTime
+        public long OffLineTimeTicks
+        {
+            get
+            {
+                return OffLineTime.Ticks;
+            }
+            set
+            {
+                OffLineTime = new TimeSpan(value);
             }
         }
 
@@ -57,5 +96,6 @@ namespace MonitoringSite
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
+
     }
 }

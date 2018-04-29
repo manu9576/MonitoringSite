@@ -10,9 +10,8 @@ namespace WpfMonitoring
 {
     public class MainView
     {
-
+        public SiteParameters TestConnection { get; set; }
         public ObservableCollection<SiteParameters> Sites { get; set; }
-
 
         public MainView()
         {
@@ -20,11 +19,12 @@ namespace WpfMonitoring
 
         }
 
-        public void AddSite(string name)
+        public MainView(ObservableCollection<SiteParameters> sites,SiteParameters testConnection)
         {
-            SiteParameters newSite = new SiteParameters(name);
-            Sites.Add(newSite);
+            Sites = sites;
+            TestConnection = testConnection;
         }
+
 
     }
 }
