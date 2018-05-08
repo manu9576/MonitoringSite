@@ -59,5 +59,10 @@ namespace WpfMonitoring
                 m_Worker.RemoveSite((item as SiteParameters).SiteName);
             }
         }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            m_Worker.TestMail();
+        }
     }
 }

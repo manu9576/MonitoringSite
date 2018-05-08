@@ -53,7 +53,7 @@ namespace Logger
 
             StringBuilder sb = new StringBuilder();
 
-            sb.Append(String.Format("{0,-" + SIZE_DATETIME + "};", Date.ToString("yyyy-MM-dd HH:mm:ss.f")));
+            sb.Append(String.Format("{0,-" + SIZE_DATETIME + "};", Date.ToString("yyyy-MM-dd HH:mm:ss.fff")));
             sb.Append(String.Format("{0,-" + SIZE_LEVEL + "};",Level.ToString()));
             sb.Append(Message);
 

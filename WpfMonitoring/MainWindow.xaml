@@ -25,6 +25,7 @@
             <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
             <RowDefinition/>
+            <RowDefinition Height="auto"/>
             <RowDefinition Height="15"/>
         </Grid.RowDefinitions>
         <Label x:Name="lb_Connection" HorizontalAlignment="Right" Grid.Row="1" Grid.Column="1" Content="Temps avec internet : "/>
@@ -35,5 +36,6 @@
         <Button x:Name="bt_action" Grid.Row="2" Grid.Column="3" Click="Bt_action_Click" HorizontalAlignment="Left" Margin="0" Content="Ajout" />
         <Button x:Name="bt_delete" Grid.Row="2" Grid.Column="4" Click="Bt_delete_Click" HorizontalAlignment="Left" Margin="0" Content="Effacer" />
         <DataGrid x:Name="dg_Sites" Grid.ColumnSpan="4" Grid.Column="1" Grid.Row="3" ItemsSource="{Binding Sites}" IsReadOnly="True"/>
+        <Button Content="Button" Grid.Column="1" HorizontalAlignment="Left" Grid.Row="4" Click="Button_Click"/>
     </Grid>
 </Window>

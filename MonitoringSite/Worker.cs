@@ -27,8 +27,8 @@ namespace MonitoringSite
 
         public Worker()
         {
-            Parameter = GlobalParameters.Load();
 
+            Parameter = new GlobalParameters();
             TimeIntervalSec = 2;
 
             m_Pinging = new Thread(Th_ping)
@@ -37,6 +37,16 @@ namespace MonitoringSite
             };
 
             m_Pinging.Start();
+        }
+
+        public void LoadParamaters()
+        {
+            Parameter = GlobalParameters.Load();
+        }
+
+        public void SaveParameter()
+        {
+            Parameter.SaveSites();
         }
 
         public bool AddSite(string name)
@@ -151,13 +161,31 @@ namespace MonitoringSite
 
         public void Stop()
         {
-            Parameter.SaveSites();
+     
 
             m_running = false;
             
             m_Pinging.Join();
         }
 
+
+        public void TestMail()
+        {
+            MailSender.SendMailShutdownSite("test");
+        }
+
+        public SiteParameters GetSiteByName(string name)
+        {
+
+            IEnumerable<SiteParameters> rep = Parameter.SitesList.Where(s => s.SiteName == name);
+
+            if (rep == null || rep.Count() > 1)
+            {
+                throw new Exception("Get site : null or duplicate");
+            }
+
+            return rep.First();
+        }
 
     }
 }

@@ -13,7 +13,7 @@ namespace MonitoringSite
     {
         private const string FILE_NAME = "Param.xml";
         private static string m_pathSiteName = null;
-        private string SITE_ONELINE_TEST = "8.8.8.8";
+        private readonly string SITE_ONELINE_TEST = "8.8.8.8";
 
 
 
