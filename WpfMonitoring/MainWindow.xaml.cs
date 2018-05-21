@@ -1,4 +1,5 @@
-﻿using MonitoringSite;
+﻿
+using MonitoringSite;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,19 +22,16 @@ namespace WpfMonitoring
     /// </summary>
     public partial class MainWindow : Window
     {
-
-        private MainView m_View = null;
         private Worker m_Worker = null;
 
         public MainWindow()
         {
+
             InitializeComponent();
 
             m_Worker = new Worker();
-            m_View = new MainView(m_Worker.Parameter.SitesList,m_Worker.Parameter.ConnectionTest);
-
-            DataContext = m_View;
-
+            m_Worker.LoadParamaters();
+            DataContext = m_Worker.Parameter;
 
         }
 
@@ -41,6 +39,7 @@ namespace WpfMonitoring
         {
             if (m_Worker != null)
             {
+                m_Worker.SaveParameter();
                 m_Worker.Stop();
             }
         }
@@ -54,15 +53,20 @@ namespace WpfMonitoring
         {
             object item = dg_Sites.SelectedItem;
 
-            if (item != null && item is SiteParameters)
+            if (item != null && item is SiteParameters site)
             {
-                m_Worker.RemoveSite((item as SiteParameters).SiteName);
+                m_Worker.RemoveSite(site.SiteName);
             }
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private void Parameter_Click(object sender, RoutedEventArgs e)
         {
-            m_Worker.TestMail();
+            Parameters windowParameter = new Parameters(m_Worker.Parameter);
+
+            windowParameter.ShowDialog();
+
+            windowParameter.Close();
         }
+        
     }
 }

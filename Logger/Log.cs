@@ -6,7 +6,7 @@ using System.Threading;
 
 namespace Logger
 {
-    public enum MessageLevel { Information, Warning, Error }
+    public enum MessageLevel { Verbose, Information, Warning, Error }
 
     /// <summary>
     /// Logger class,
@@ -64,7 +64,7 @@ namespace Logger
             }
         }
 
-        public static MessageLevel LogLevel { get; set; }
+        public static MessageLevel LogLevel { get; set; } = MessageLevel.Verbose;
 
         public static void DisposeInstance()
         {
@@ -107,10 +107,12 @@ namespace Logger
             {
                 try
                 {
-
+                    // check size of log file, rename if size exced
+                    // and create a new size file
                     if (fi.Length > MAX_SIZE)
                     {
                         RemaneFile();
+                        CreateLog();
                     }
 
                     // ***  writing of all message in waiting ***
@@ -181,6 +183,17 @@ namespace Logger
         }
 
         /// <summary>
+        /// Add lowest message to queue message log
+        /// insert current time to log message
+        /// </summary>
+        /// <param name="message">message to write</param>
+        public static void WriteVerbose(string message)
+        {
+            m_Messages.Enqueue(new LogMessage(DateTime.Now, MessageLevel.Verbose, message));
+        }
+
+
+        /// <summary>
         /// Add normal message to queue message log
         /// insert current time to log message
         /// </summary>
@@ -211,7 +224,7 @@ namespace Logger
         }
 
         /// <summary>
-        /// for exection, add Message and stackTrace to log 
+        /// add Message and stackTrace to log 
         /// </summary>
         /// <param name="ex">exception to log</param>
         public static void WriteError(string message)

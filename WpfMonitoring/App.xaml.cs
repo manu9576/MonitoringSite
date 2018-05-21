@@ -6,10 +6,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 
-namespace WpfMonitoring
+namespace test
 {
     /// <summary>
-    /// Interaction logic for App.xaml
+    /// Logique d'interaction pour App.xaml
     /// </summary>
     public partial class App : Application
     {

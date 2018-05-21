@@ -10,26 +10,26 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 using Logger;
+using System.Net;
 
 namespace MonitoringSite
 {
     public class Worker
     {
         
-        public int TimeIntervalSec { get; set; }
-
 
         public GlobalParameters Parameter { get; set; }
         
         private Thread m_Pinging = null;
         private bool m_running = false;
 
-
         public Worker()
         {
-
+            
             Parameter = new GlobalParameters();
-            TimeIntervalSec = 2;
+            Parameter.TimeIntervalSec = 2;
+
+            
 
             m_Pinging = new Thread(Th_ping)
             {
@@ -41,12 +41,13 @@ namespace MonitoringSite
 
         public void LoadParamaters()
         {
-            Parameter = GlobalParameters.Load();
+            Parameter = GlobalParameters.LoadParameters();
+            Log.LogLevel = Parameter.LogLevel;
         }
 
         public void SaveParameter()
         {
-            Parameter.SaveSites();
+            Parameter.SaveParameters();
         }
 
         public bool AddSite(string name)
@@ -57,7 +58,11 @@ namespace MonitoringSite
             {
                 lock (Parameter)
                 {
-                    Parameter.SitesList.Add(new SiteParameters(name));
+                    SiteParameters siteadded = new SiteParameters(name);
+                    siteadded.AddEvent("Adding");
+                    Parameter.ConnectionTest.OnConnectionChanged += siteadded.ChangdeConnectionStatus;
+                    siteadded.ChangdeConnectionStatus(null,Parameter.ConnectionTest.IsOnline);
+                    Parameter.SitesList.Add(siteadded);
                     response = true;
                 }
             }
@@ -88,7 +93,6 @@ namespace MonitoringSite
         private void Th_ping()
         {
             m_running = true;
-            bool connectionTest = false;
             Stopwatch timeElapsed = null;
 
             while (m_running)
@@ -98,24 +102,24 @@ namespace MonitoringSite
                     timeElapsed = Stopwatch.StartNew();
                     
                     // Avoid that interval change during a loop
-                    int interval = TimeIntervalSec;
+                    int interval = Parameter.TimeIntervalSec;
 
-                    connectionTest = PingSite(Parameter.ConnectionTest, interval);
+                    TestSite(Parameter.ConnectionTest, interval,true);
 
-                    if (connectionTest)
+                    if (Parameter.ConnectionTest.IsOnline)
                     {
                         lock (Parameter)
                         {
                             Parallel.ForEach(Parameter.SitesList, site =>
                             {
-                                PingSite(site, interval);
+                                TestSite(site, interval,false);
                             });
                         }
                     }
 
                     timeElapsed.Stop();
 
-                    Thread.Sleep(TimeIntervalSec * 1000 - (int)timeElapsed.ElapsedMilliseconds);                     
+                    Thread.Sleep(Parameter.TimeIntervalSec * 1000 - (int)timeElapsed.ElapsedMilliseconds);                     
                 }
                 catch (Exception ex)
                 {
@@ -124,39 +128,109 @@ namespace MonitoringSite
             }
         }
 
-        public static bool PingSite(SiteParameters webSite,int interval)
+        public static bool PingSite(string siteName,int timeOut)
         {
+            bool pingResponse = false;
 
+            try
+            {
+                if (NetworkInterface.GetIsNetworkAvailable())
+                {
+                    Ping pinger = new Ping();
+
+                    PingReply reply = pinger.Send(siteName,timeOut );
+
+                    Log.WriteVerbose("Ping on site " + siteName + " response : " + reply.Status);
+
+                    pingResponse = reply.Status == IPStatus.Success;
+                }
+               
+            }
+            catch(Exception ex)
+            {
+                Log.WriteError(ex);
+                pingResponse = false;
+            }
+
+            return pingResponse;
+        }
+
+        public static bool TestSite(string siteName,int timeOut)
+        {
             bool response = false;
 
             try
             {
+                if (NetworkInterface.GetIsNetworkAvailable())
+                {
+                    if (!siteName.Contains(@"http://") || !siteName.Contains(@"https://"))
+                        siteName = @"http://" + siteName;
+
+                    HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(siteName);
+                    request.AllowAutoRedirect = false; // find out if this site is up and don't follow a redirector
+                    request.Method = "HEAD";
+                    request.Timeout = timeOut;
+                    HttpWebResponse res = request.GetResponse() as HttpWebResponse;
+
+                    response = (res== null || res.StatusCode == HttpStatusCode.OK);
+
+                    Log.WriteVerbose("test site " + siteName + " response : " + res?.StatusCode ?? " null");
+
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Log.WriteError(ex);
+                response = false;
+            }
+            return response;
+
+        }
+
+
+        public void TestSite(SiteParameters webSite,int interval,bool pingTest)
+        {
+            try
+            {
                 if (webSite != null)
                 {
-                    Ping pinger = new Ping();
-                    
-                    PingReply reply = pinger.Send(webSite.SiteName, 500);
-
-                    Log.WriteInformation("Ping on site " + webSite.SiteName + " response : " + reply.Status);
 
                     webSite.SurveyTime += TimeSpan.FromTicks(interval * 10000000);
 
-                    response = reply.Status == IPStatus.Success;
+                    if(pingTest)
+                        webSite.IsOnline = PingSite(webSite.SiteName, Parameter.TimeOutSec);
+                    else
+                        webSite.IsOnline = TestSite(webSite.SiteName,Parameter.TimeOutSec);
 
-                    if (!response)
+                    if (!webSite.IsOnline)
                     {
                         webSite.OffLineTime += TimeSpan.FromTicks(interval*10000000);
+                        
                     }
                 }
             }
             catch (Exception ex)
             {
-                response = false;
                 Log.WriteError(ex);
             }
 
-            return response;
 
+        }
+
+
+        private void ChangdeOnlineStatus(SiteParameters site, bool statusLine)
+        {
+            if (statusLine)
+            {
+                site.AddEvent("Site offline");
+                MailSender.SendMailShutdownSite(site.SiteName,Parameter.Mail);
+            }
+            else
+            {
+                site.AddEvent("Site online");
+                MailSender.SendMailOnlineSite(site.SiteName, Parameter.Mail);
+            }
         }
 
         public void Stop()
@@ -168,21 +242,21 @@ namespace MonitoringSite
             m_Pinging.Join();
         }
 
-
         public void TestMail()
         {
-            MailSender.SendMailShutdownSite("test");
+            MailSender.SendMailShutdownSite("test",Parameter.Mail);
         }
 
         public SiteParameters GetSiteByName(string name)
         {
 
-            IEnumerable<SiteParameters> rep = Parameter.SitesList.Where(s => s.SiteName == name);
+            var rep = Parameter.SitesList.Where(s => s.SiteName == name);
 
             if (rep == null || rep.Count() > 1)
             {
                 throw new Exception("Get site : null or duplicate");
             }
+                       
 
             return rep.First();
         }

@@ -9,9 +9,7 @@ namespace ConsoleMonitoring
         {
             Console.WriteLine("Hello World!");
 
-            SiteParameters googleDNS = new SiteParameters("8.8.8.8");
-
-            Console.WriteLine("Test 8.8.8.8 : " + Worker.PingSite(googleDNS,1));
+            Console.WriteLine("Test 8.8.8.8 : " + Worker.PingSite("8.8.8.8",500));
 
             Console.ReadKey();
         }

@@ -13,7 +13,7 @@ namespace Test_MonitoringSite
         public void PingSite_Ok()
         {
 
-            bool result = Worker.PingSite(new SiteParameters(Constantes.GoogleDNS), 1);
+            bool result = Worker.PingSite(Constantes.GoogleDNS_IP,500);
 
             Assert.IsTrue(result);
         }
@@ -22,7 +22,7 @@ namespace Test_MonitoringSite
         public void PingSite_FalseIP()
         {
 
-            bool result = Worker.PingSite(new SiteParameters(Constantes.FalseIP), 1);
+            bool result = Worker.PingSite(Constantes.False_IP, 500);
 
             Assert.IsTrue(!result);
         }
@@ -31,7 +31,7 @@ namespace Test_MonitoringSite
         public void PingSite_NoneExistingIP()
         {
 
-            bool result = Worker.PingSite(new SiteParameters(Constantes.NoneExistingSite), 1);
+            bool result = Worker.PingSite(Constantes.NoneExisting_IP, 500);
 
             Assert.IsTrue(!result);
         }
@@ -40,17 +40,17 @@ namespace Test_MonitoringSite
         public void PingSite_MultiThread()
         {
 
-            SiteParameters[] ips = 
-                {
-                new SiteParameters(Constantes.GoogleDNS),
-                new SiteParameters(Constantes.NoneExistingSite),
-                new SiteParameters(Constantes.FalseIP),
-                new SiteParameters(Constantes.GoogleDNS)
+            string[] sites = 
+            {
+                Constantes.GoogleDNS_IP,
+                Constantes.NoneExisting_IP,
+                Constantes.False_IP,
+                Constantes.GoogleDNS_IP
             };
 
-            Parallel.ForEach(ips, (ip) =>
+            Parallel.ForEach(sites, (site) =>
             {
-                bool result = Worker.PingSite(ip, 1);
+                bool result = Worker.PingSite(site, 500);
             });
 
         }
@@ -59,7 +59,7 @@ namespace Test_MonitoringSite
         public void PingSite_EmptyString()
         {
 
-            bool result = Worker.PingSite(new SiteParameters(string.Empty), 1);
+            bool result = Worker.PingSite(string.Empty, 500);
 
             Assert.IsTrue(!result);
         }

@@ -8,34 +8,39 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Window.DataContext>
-        <local:MainView/>
+        <MonitoringSite:GlobalParameters/>
     </Window.DataContext>
 
-    <Grid>
+    <Grid Margin="20">
+       
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="15"/>
+          
             <ColumnDefinition/>
             <ColumnDefinition/>
+            <ColumnDefinition Width="auto"/>
             <ColumnDefinition/>
-            <ColumnDefinition/>
-            <ColumnDefinition Width="15"/>
+            
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="15"/>
+            
             <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
             <RowDefinition/>
-            <RowDefinition Height="auto"/>
-            <RowDefinition Height="15"/>
+
         </Grid.RowDefinitions>
-        <Label x:Name="lb_Connection" HorizontalAlignment="Right" Grid.Row="1" Grid.Column="1" Content="Temps avec internet : "/>
-        <Label x:Name="lb_InternetTime" HorizontalAlignment="Right" Grid.Row="1" Grid.Column="2" Content="{Binding TestConnection.SurveyTime}"/>
-        <Label x:Name="lb_InternetOffTime" HorizontalAlignment="Right" Grid.Row="1" Grid.Column="3"  Content="{Binding TestConnection.OffLineTime}"/>
-        <Label x:Name="lb_NomSite" HorizontalAlignment="Right" Grid.Row="2" Grid.Column="1" Content="Nom du site à ajouter"/>
-        <TextBox x:Name="tb_NomSite" Grid.Row="2" Grid.Column="2" TextAlignment="Center" Text="aliaa.fr"/>
-        <Button x:Name="bt_action" Grid.Row="2" Grid.Column="3" Click="Bt_action_Click" HorizontalAlignment="Left" Margin="0" Content="Ajout" />
-        <Button x:Name="bt_delete" Grid.Row="2" Grid.Column="4" Click="Bt_delete_Click" HorizontalAlignment="Left" Margin="0" Content="Effacer" />
-        <DataGrid x:Name="dg_Sites" Grid.ColumnSpan="4" Grid.Column="1" Grid.Row="3" ItemsSource="{Binding Sites}" IsReadOnly="True"/>
-        <Button Content="Button" Grid.Column="1" HorizontalAlignment="Left" Grid.Row="4" Click="Button_Click"/>
+ 
+            <Label x:Name="lb_Connection" HorizontalAlignment="Right" Grid.Row="0" Grid.Column="0" Content="Temps avec internet : "/>
+        <Label x:Name="lb_InternetTime" HorizontalAlignment="Right" Grid.Row="0" Grid.Column="1" Content="{Binding ConnectionTest.SurveyTime}"/>
+        <Label x:Name="lb_InternetOffTime" HorizontalAlignment="Right" Grid.Row="0" Grid.Column="2"  Content="{Binding ConnectionTest.OffLineTime}"/>
+        <Label x:Name="lb_NomSite" HorizontalAlignment="Right" Grid.Row="1" Grid.Column="0" Content="Nom du site à ajouter"/>
+        <TextBox x:Name="tb_NomSite" Grid.Row="1" Grid.Column="1" TextAlignment="Center" Text="aliaa.fr"/>
+        <Button x:Name="bt_action" Grid.Row="1" Grid.Column="2" Click="Bt_action_Click" HorizontalAlignment="Left"  Content="Ajout" VerticalAlignment="Center" />
+        <Button x:Name="bt_delete" Grid.Row="1" Grid.Column="3" Click="Bt_delete_Click" HorizontalAlignment="Left" Content="Effacer" />
+        
+        <DataGrid x:Name="dg_Sites" Grid.ColumnSpan="2" Grid.Column="0" Grid.Row="2" ItemsSource="{Binding SitesList}" IsReadOnly="True" IsSynchronizedWithCurrentItem="True" DataContext="{Binding Mode=OneWay}"/>
+        
+        <DataGrid x:Name="dg_Events" Grid.ColumnSpan="1" Grid.Column="3" Grid.Row="2" IsReadOnly="True" DataContext="{Binding Mode=OneWay}" ItemsSource="{Binding SitesList/Events}"/>
+        <Button Content="Parameters" Grid.Column="3" HorizontalAlignment="Center" Grid.Row="0" Click="Parameter_Click" VerticalAlignment="Center"/>
+
     </Grid>
 </Window>

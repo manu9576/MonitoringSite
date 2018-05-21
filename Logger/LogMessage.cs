@@ -5,17 +5,25 @@ using static Logger.Log;
 namespace Logger
 {
     /// <summary>
-    /// Line off log message
+    /// Line of log file
+    ///  - ToString() function is used to format the line for the file
+    ///  - GetHeader() function that return a line for name header of columns 
     /// </summary>
     internal class LogMessage
     {
-        
-
+        // size in char of date time column
         private const int SIZE_DATETIME = 25;
+
+        // siez in char of message level column
         private const int SIZE_LEVEL = 15;
 
+        // Date of the message
         private DateTime Date { get; set; }
+
+        // level of the message
         internal MessageLevel Level { get; private set; }
+
+        // message to add at log file
         private string Message { get; set; }
 
 
@@ -40,7 +48,7 @@ namespace Logger
         /// <returns></returns>
         public static string GetHeader()
         {
-            return String.Format("{0,-" + SIZE_DATETIME + "}", "Date Time") + String.Format("{0,-" + SIZE_LEVEL + "}", ";Level") + ";Message";
+            return String.Format("{0,-" + SIZE_DATETIME + "}", "Date Time")+ ";" + String.Format("{0,-" + SIZE_LEVEL + "}", "Level") + ";Message";
         }
 
         /// <summary>

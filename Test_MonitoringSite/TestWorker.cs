@@ -21,16 +21,16 @@ namespace Test_MonitoringSite
         {
 
             Worker wk = new Worker();
-            wk.AddSite(Constantes.GoogleDNS);
+            wk.AddSite(Constantes.GoogleDNS_IP);
             wk.AddSite(Constantes.NoneExistingSite);
 
 
-            wk.TimeIntervalSec = 1;
+            wk.Parameter.TimeIntervalSec = 1;
 
             Thread.Sleep(10000);
             wk.Stop();
 
-            SiteParameters siteGoogle = wk.GetSiteByName(Constantes.GoogleDNS);
+            SiteParameters siteGoogle = wk.GetSiteByName(Constantes.GoogleDNS_IP);
             SiteParameters siteNonExisting = wk.GetSiteByName(Constantes.NoneExistingSite);
 
 
@@ -45,16 +45,16 @@ namespace Test_MonitoringSite
         {
 
             Worker wk = new Worker();
-            wk.AddSite(Constantes.GoogleDNS2);
+            wk.AddSite(Constantes.GoogleDNS2_IP);
 
             Stopwatch timeElapsed = Stopwatch.StartNew();
 
-            wk.TimeIntervalSec = 1;
+            wk.Parameter.TimeIntervalSec = 1;
 
             Thread.Sleep(10050);
             wk.Stop();
 
-            SiteParameters site = wk.GetSiteByName(Constantes.GoogleDNS2);
+            SiteParameters site = wk.GetSiteByName(Constantes.GoogleDNS2_IP);
 
             if ((site.SurveyTime - timeElapsed.Elapsed) > TimeSpan.FromSeconds(0.5))
                 Assert.Fail("Difference too importante > 0.5 sec");
@@ -72,13 +72,13 @@ namespace Test_MonitoringSite
 
             wk.Parameter.SitesList.Clear();
 
-            wk.AddSite(Constantes.GoogleDNS);
+            wk.AddSite(Constantes.GoogleDNS_IP);
             Assert.AreEqual(wk.Parameter.SitesList.Count, 1,"Adding site : count must be 1");
 
-            wk.AddSite(Constantes.GoogleDNS2);
+            wk.AddSite(Constantes.GoogleDNS2_IP);
             Assert.AreEqual(wk.Parameter.SitesList.Count, 2, "Adding new site : count must be 2");
 
-            wk.AddSite(Constantes.GoogleDNS);
+            wk.AddSite(Constantes.GoogleDNS_IP);
             Assert.AreEqual(wk.Parameter.SitesList.Count, 2, "Adding existing site : count must be 2");
 
             wk.RemoveSite(null);
@@ -87,7 +87,7 @@ namespace Test_MonitoringSite
 
             wk.RemoveSite(Constantes.NoneExistingSite);
 
-            wk.RemoveSite(Constantes.GoogleDNS);
+            wk.RemoveSite(Constantes.GoogleDNS_IP);
             Assert.AreEqual(wk.Parameter.SitesList.Count, 1, "Remove site : count must be 1");
 
         }
