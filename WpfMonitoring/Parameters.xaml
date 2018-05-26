@@ -9,7 +9,8 @@
         mc:Ignorable="d"
         Title="Parameters"
         Height="auto"
-        Width="auto" SizeToContent="WidthAndHeight" ResizeMode="NoResize">
+        Width="auto" SizeToContent="WidthAndHeight" ResizeMode="NoResize" WindowStyle="ToolWindow"
+    Style="{StaticResource {x:Type Window}}">
     <Window.Resources>
         <ObjectDataProvider x:Key="loggerLevel"
         MethodName="GetValues" ObjectType="{x:Type System:Enum}">
