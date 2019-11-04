@@ -167,11 +167,11 @@ namespace MonitoringSite
                         siteName = @"http://" + siteName;
 
                     HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(siteName);
-                    request.AllowAutoRedirect = false; // find out if this site is up and don't follow a redirector
+                    request.AllowAutoRedirect = true; // find out if this site is up and don't follow a redirector
                     request.Method = "HEAD";
-                    request.Timeout = timeOut;
+                    request.Timeout = timeOut * 1000;
                     HttpWebResponse res = request.GetResponse() as HttpWebResponse;
-
+                    
                     response = (res== null || res.StatusCode == HttpStatusCode.OK);
 
                     Log.WriteVerbose("test site " + siteName + " response : " + res?.StatusCode ?? " null");
