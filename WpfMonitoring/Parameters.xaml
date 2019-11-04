@@ -1,19 +1,25 @@
-﻿<Window
+﻿<Window x:Class="WpfMonitoring.Parameters"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:System="clr-namespace:System;assembly=mscorlib"
         xmlns:Logger="clr-namespace:Logger;assembly=Logger" 
-        xmlns:MonitoringSite="clr-namespace:MonitoringSite;assembly=MonitoringSite" x:Class="WpfMonitoring.Parameters"
+        xmlns:MonitoringSite="clr-namespace:MonitoringSite;assembly=MonitoringSite" 
         mc:Ignorable="d"
         Title="Parameters"
         Height="auto"
-        Width="auto" SizeToContent="WidthAndHeight" ResizeMode="NoResize" WindowStyle="ToolWindow"
-    Style="{StaticResource {x:Type Window}}">
+        Width="auto" 
+        SizeToContent="WidthAndHeight" 
+        ResizeMode="NoResize" 
+        WindowStyle="ToolWindow"
+        Style="{StaticResource {x:Type Window}}">
+    
     <Window.Resources>
         <ObjectDataProvider x:Key="loggerLevel"
-        MethodName="GetValues" ObjectType="{x:Type System:Enum}">
+                            MethodName="GetValues" 
+                            ObjectType="{x:Type System:Enum}">
+            
             <ObjectDataProvider.MethodParameters>
                 <x:Type TypeName="Logger:MessageLevel"/>
             </ObjectDataProvider.MethodParameters>

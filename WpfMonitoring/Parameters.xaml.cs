@@ -28,11 +28,6 @@ namespace WpfMonitoring
             InitializeComponent();
 
             DataContext = globalParameter;
-
-            
-
         }
-
-
     }
 }
